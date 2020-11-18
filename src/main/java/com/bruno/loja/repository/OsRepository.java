@@ -1,5 +1,7 @@
 package com.bruno.loja.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +16,7 @@ public interface OsRepository extends JpaRepository<OS, Long>{
 
 	@Query("SELECT p FROM OS p WHERE p.cliente.nome LIKE LOWER(CONCAT ('%', :nome,'%')) ")
 	Page<OS> findOsByNome(@Param("nome") String nome, Pageable pageable);
+	
+	@Query("SELECT p FROM OS p WHERE p.status LIKE LOWER(CONCAT ('%', ABERTA,'%')) ")
+	List<OS> findByOsAberta(OS os);
 }

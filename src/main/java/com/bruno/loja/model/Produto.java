@@ -2,15 +2,19 @@ package com.bruno.loja.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import com.bruno.loja.vo.ProdutoVO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Produto implements Serializable{
@@ -27,15 +31,32 @@ public class Produto implements Serializable{
 
 	@NotNull
 	private BigDecimal preco;
+	
+	
+	@OneToMany(mappedBy = "produto", cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<Item> listaItem = new ArrayList<Item>();
 
 	public Produto() {
 
 	}
 
-	public Produto(ProdutoVO produto) {
-		this.id = produto.getKey();
-		this.nome = produto.getNome();
-		this.preco = produto.getPreco();
+	public List<Item> getListaItem() {
+		return listaItem;
+	}
+
+	public void setListaItem(List<Item> listaItem) {
+		this.listaItem = listaItem;
+	}
+
+	
+
+	public Produto(Long id, @NotNull @NotBlank String nome, @NotNull BigDecimal preco, List<Item> listaItem) {
+		super();
+		this.id = id;
+		this.nome = nome;
+		this.preco = preco;
+		this.listaItem = listaItem;
 	}
 
 	public Long getId() {

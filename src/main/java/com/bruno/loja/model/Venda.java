@@ -1,10 +1,10 @@
 package com.bruno.loja.model;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -17,10 +17,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 
-import com.bruno.loja.vo.VendaVO;
-
 @Entity
-public class Venda {
+public class Venda implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +37,7 @@ public class Venda {
 	@ManyToOne
 	private Funcionario funcionario;
 
-	@OneToMany(cascade = CascadeType.ALL , mappedBy = "venda")
+	@OneToMany(targetEntity = Item.class, mappedBy = "venda", cascade = CascadeType.ALL)
 	private List<Item> listaItem = new ArrayList<Item>();
 
 	private BigDecimal desconto;
@@ -51,20 +51,28 @@ public class Venda {
 
 	}
 
-	public Venda(VendaVO vendaVO) {
-		this.id = vendaVO.getKey();
-		this.dataVenda = vendaVO.getDataVenda();
-		this.desconto = vendaVO.getDesconto();
-		this.statusVenda = vendaVO.getStatusVenda();
-		this.valorTotal = vendaVO.getValorTotal();
-		if (vendaVO.getCliente() != null) {
-			this.cliente = new Cliente(vendaVO.getCliente());
-		}
-		if (vendaVO.getFuncionario() != null) {
-			this.funcionario = new Funcionario(vendaVO.getFuncionario());
-		}
-		this.listaItem = vendaVO.getListaItem().stream().map(s -> new Item(s)).collect(Collectors.toList());
+	
+
+	
+
+
+	public Venda(Long id, @NotNull LocalDate dataVenda, @NotNull Cliente cliente, @NotNull Funcionario funcionario,
+			List<Item> listaItem, BigDecimal desconto, BigDecimal valorTotal, StatusVenda statusVenda) {
+		super();
+		this.id = id;
+		this.dataVenda = dataVenda;
+		this.cliente = cliente;
+		this.funcionario = funcionario;
+		this.listaItem = listaItem;
+		this.desconto = desconto;
+		this.valorTotal = valorTotal;
+		this.statusVenda = statusVenda;
 	}
+
+
+
+
+
 
 	public Long getId() {
 		return id;

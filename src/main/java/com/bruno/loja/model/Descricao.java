@@ -28,7 +28,17 @@ public class Descricao {
 	@ManyToOne
 	private OS ordemServico;
 	
+	public Descricao() {}
 	
+
+	public Descricao(Long id, @NotNull String comentario, @NotNull LocalDate dataEnvio, OS ordemServico) {
+		super();
+		this.id = id;
+		this.comentario = comentario;
+		this.dataEnvio = dataEnvio;
+		this.ordemServico = ordemServico;
+	}
+
 
 	public OS getOrdemServico() {
 		return ordemServico;

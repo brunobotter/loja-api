@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import com.bruno.loja.vo.ClienteVO;
+import org.hibernate.validator.constraints.br.CPF;
 
 @Entity
 public class Cliente extends Pessoa {
@@ -15,6 +15,7 @@ public class Cliente extends Pessoa {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@CPF
 	private String cpf;
 	
 	private String cnpj;
@@ -23,20 +24,16 @@ public class Cliente extends Pessoa {
 		
 	}
 	
-	public Cliente(ClienteVO clienteVO) {
-		this.id = clienteVO.getKey();
-		this.cpf = clienteVO.getCpf();
-		this.cnpj = clienteVO.getCnpj();
-		this.cep = clienteVO.getCep();
-		this.cidade = clienteVO.getCidade();
-		this.complemento = clienteVO.getComplemento();
-		this.email = clienteVO.getEmail();
-		this.estado = clienteVO.getEstado();
-		this.logradouro = clienteVO.getLogradouro();
-		this.nome = clienteVO.getNome();
-		this.numero = clienteVO.getNumero();
-		this.telefone = clienteVO.getTelefone();
+	
+
+	public Cliente(Long id, @CPF String cpf, String cnpj) {
+		super();
+		this.id = id;
+		this.cpf = cpf;
+		this.cnpj = cnpj;
 	}
+
+
 
 	public Long getId() {
 		return id;

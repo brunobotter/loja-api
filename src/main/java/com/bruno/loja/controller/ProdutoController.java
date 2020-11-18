@@ -1,8 +1,5 @@
 package com.bruno.loja.controller;
 
-import static org.springframework.hateoas.server.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.ControllerLinkBuilder.methodOn;
-
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +24,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bruno.loja.model.Produto;
 import com.bruno.loja.service.ProdutoService;
-import com.bruno.loja.vo.ProdutoVO;
 
 @RestController
 @RequestMapping("api/produto")
@@ -39,17 +36,14 @@ public class ProdutoController {
 	private ProdutoService service;
 	
 	@Autowired
-	private PagedResourcesAssembler<ProdutoVO> assembler;
-	
-	@SuppressWarnings("deprecation")
+	private PagedResourcesAssembler<Produto> assembler;
+
 	@GetMapping("/{id}")
-	public ProdutoVO buscaPorId(@PathVariable Long id) {
-		ProdutoVO produtoVo = service.buscaPorId(id);
-		produtoVo.add(linkTo(methodOn(ProdutoController.class).buscaPorId(id)).withSelfRel());
-		return produtoVo;
+	public ResponseEntity<Produto> buscaPorId(@PathVariable Long id) {
+		Produto produto = service.buscaPorId(id);
+		return ResponseEntity.ok(produto);
 	}
 	
-	@SuppressWarnings("deprecation")
 	@GetMapping
 	public ResponseEntity<?> buscatodos(
 			@RequestParam(value = "page",defaultValue = "0") int page,
@@ -59,20 +53,18 @@ public class ProdutoController {
 		
 		Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "nome"));
 		
-		Page<ProdutoVO> produtoVo =  service.buscaTodos(pageable);
-		produtoVo.stream().forEach(p -> 
-		p.add(linkTo(methodOn(ProdutoController.class)
-				.buscaPorId(p.getKey())).withSelfRel()));	
+		Page<Produto> produto =  service.buscaTodos(pageable);
+			
 		
-		PagedModel<?> resources = assembler.toModel(produtoVo);
-		
+		PagedModel<?> resources = assembler.toModel(produto);
+	
 		return new ResponseEntity<>(resources, HttpStatus.OK);
 	}
 	
-	@SuppressWarnings("deprecation")
-	@GetMapping("/busca_por_nome/{nome}")
+	
+	@GetMapping("/busca_por_nome/")
 	public ResponseEntity<?> buscaPorNome(
-			@PathVariable("nome") String nome,
+			@RequestParam(value = "nome",defaultValue = "") String nome,
 			@RequestParam(value = "page",defaultValue = "0") int page,
 			@RequestParam(value = "limite",defaultValue = "5") int limit,
 			@RequestParam(value = "order",defaultValue = "asc") String direction){
@@ -80,36 +72,32 @@ public class ProdutoController {
 		
 		Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "nome"));
 		
-		Page<ProdutoVO> produtoVo =  service.buscaPorNome(pageable, nome);
-		produtoVo.stream().forEach(p -> 
-		p.add(linkTo(methodOn(ProdutoController.class)
-				.buscaPorId(p.getKey())).withSelfRel()));	
+		Page<Produto> produto =  service.buscaPorNome(pageable, nome);
 		
-		PagedModel<?> resources = assembler.toModel(produtoVo);
+		
+		PagedModel<?> resources = assembler.toModel(produto);
 		
 		return new ResponseEntity<>(resources, HttpStatus.OK);
 	}
 	
-	@SuppressWarnings("deprecation")
+	
+	
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public ProdutoVO salvar(@Valid @RequestBody ProdutoVO produto){
-		ProdutoVO produtoVo= service.salvar(produto);
-		produtoVo.add(linkTo(methodOn(ProdutoController.class).buscaPorId(produtoVo.getKey())).withSelfRel());
-		return produtoVo;
+	public Produto salvar(@Valid @RequestBody Produto produto){
+		Produto produtos= service.salvar(produto);
+		return produtos;
 	}
 	
-	@SuppressWarnings("deprecation")
 	@PutMapping("{id}")
 	@ResponseStatus(HttpStatus.OK)
-	public ProdutoVO atualizar(@Valid @PathVariable Long id, @RequestBody ProdutoVO produto){
-		ProdutoVO produtoVo = service.atualizar(produto, id);
-		produtoVo.add(linkTo(methodOn(ProdutoController.class).buscaPorId(id)).withSelfRel());
-		return produtoVo;
+	public ResponseEntity<Produto> atualizar(@Valid @PathVariable Long id, @RequestBody Produto produto){
+		Produto produtos = service.atualizar(produto, id);
+		return ResponseEntity.ok(produtos);
 	}
 	
 	@DeleteMapping("{id}")
-	public ResponseEntity<ProdutoVO> deletar(@PathVariable Long id){
+	public ResponseEntity<Produto> deletar(@PathVariable Long id){
 		service.deletar(id);
 		return ResponseEntity.noContent().build();
 	}

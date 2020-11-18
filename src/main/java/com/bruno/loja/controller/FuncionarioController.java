@@ -1,8 +1,5 @@
 package com.bruno.loja.controller;
 
-import static org.springframework.hateoas.server.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.ControllerLinkBuilder.methodOn;
-
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +24,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bruno.loja.model.Funcionario;
 import com.bruno.loja.service.FuncionarioService;
-import com.bruno.loja.vo.FuncionarioVO;
 
 @RestController
 @RequestMapping("api/funcionario")
@@ -36,44 +33,39 @@ import com.bruno.loja.vo.FuncionarioVO;
 public class FuncionarioController {
 
 	@Autowired
-	private FuncionarioService service;
+	private FuncionarioService funcionarioService;
 	
 
 	@Autowired
-	private PagedResourcesAssembler<FuncionarioVO> assembler;
+	private PagedResourcesAssembler<Funcionario> assembler;
 	
 	
-	@SuppressWarnings("deprecation")
 	@GetMapping("{id}")
-	public FuncionarioVO buscaPorId(@PathVariable Long id) {
-		FuncionarioVO funcionarioVO = service.buscaPorId(id);
-		funcionarioVO.add(linkTo(methodOn(FuncionarioController.class).buscaPorId(id)).withSelfRel());
-		return funcionarioVO;
+	public ResponseEntity<Funcionario> buscaPorId(@PathVariable Long id) {
+		Funcionario funcionario = funcionarioService.buscaPorId(id);
+		return ResponseEntity.ok(funcionario);
 	}
 	
-	@SuppressWarnings("deprecation")
 	@GetMapping
 	public ResponseEntity<?> buscaTodos(
 			@RequestParam(value = "page", defaultValue = "0") int page,
-			@RequestParam(value = "limite", defaultValue = "2") int limit,
+			@RequestParam(value = "limite", defaultValue = "5") int limit,
 			@RequestParam(value = "direction", defaultValue = "asc") String direction) {
 		var sortDirection = "desc".equalsIgnoreCase(direction) ? Direction.DESC : Direction.ASC;
 
 		Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "nome"));
 
-		Page<FuncionarioVO> funcionarioVO = service.buscaTodosPaginado(pageable);
-		funcionarioVO.stream()
-				.forEach(p -> p.add(linkTo(methodOn(FuncionarioController.class)
-						.buscaPorId(p.getKey())).withSelfRel()));
+		Page<Funcionario> funcionario = funcionarioService.buscaTodosPaginado(pageable);
+		
 
-		PagedModel<?> resources = assembler.toModel(funcionarioVO);
+		PagedModel<?> resources = assembler.toModel(funcionario);
 
 		return new ResponseEntity<>(resources, HttpStatus.OK);
 	}
 	
-	@SuppressWarnings("deprecation")
-	@GetMapping("busca_por_nome/{nome}")
-	public ResponseEntity<?> buscaPorNome(@PathVariable("nome") String nome,
+	@GetMapping("/busca_por_nome/")
+	public ResponseEntity<?> buscaPorNome(
+			@RequestParam(value = "nome", defaultValue = "") String nome,
 			@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "limite", defaultValue = "2") int limit,
 			@RequestParam(value = "direction", defaultValue = "asc") String direction) {
@@ -81,37 +73,31 @@ public class FuncionarioController {
 
 		Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "nome"));
 
-		Page<FuncionarioVO> funcionarioVO = service.buscaPorNome(pageable, nome);
-		funcionarioVO.stream()
-				.forEach(p -> p.add(linkTo(methodOn(FuncionarioController.class)
-						.buscaPorId(p.getKey())).withSelfRel()));
+		Page<Funcionario> funcionario = funcionarioService.buscaPorNome(pageable, nome);
+		
 
-		PagedModel<?> resources = assembler.toModel(funcionarioVO);
+		PagedModel<?> resources = assembler.toModel(funcionario);
 
 		return new ResponseEntity<>(resources, HttpStatus.OK);
 	}
 	
 	
-	@SuppressWarnings("deprecation")
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public FuncionarioVO salvar(@Valid @RequestBody FuncionarioVO func) {
-		FuncionarioVO funcionarioVO = service.salva(func);
-		funcionarioVO.add(linkTo(methodOn(ClienteController.class).buscaPorId(func.getKey())).withSelfRel());
-		return funcionarioVO;
+	public Funcionario salvar(@Valid @RequestBody Funcionario func) {
+		return funcionarioService.salva(func);
+		
 	}
 	
-	@SuppressWarnings("deprecation")
 	@PutMapping("{id}")
-	public FuncionarioVO atualizar(@Valid @PathVariable Long id, @RequestBody FuncionarioVO func){
-		FuncionarioVO funcionarioVO = service.atualiza(func, id);
-		funcionarioVO.add(linkTo(methodOn(ClienteController.class).buscaPorId(id)).withSelfRel());
-		return funcionarioVO;
+	public ResponseEntity<Funcionario> atualizar(@Valid @PathVariable Long id, @RequestBody Funcionario func){
+		Funcionario funcionario = funcionarioService.atualiza(func, id);
+		return ResponseEntity.ok(funcionario);
 	}
 	
 	@DeleteMapping("{id}")
-	public ResponseEntity<FuncionarioVO> deletar(@PathVariable Long id){
-		service.deletaPorId(id);
+	public ResponseEntity<Funcionario> deletar(@PathVariable Long id){
+		funcionarioService.deletaPorId(id);
 		return ResponseEntity.noContent().build();
 	}
 }

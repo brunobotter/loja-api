@@ -6,58 +6,49 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.bruno.loja.controller.exception.NegocioException;
-import com.bruno.loja.converter.DozerConverter;
 import com.bruno.loja.model.Produto;
 import com.bruno.loja.repository.ProdutoRepository;
-import com.bruno.loja.vo.ProdutoVO;
 
 @Service
 public class ProdutoService {
 
 	@Autowired
-	private ProdutoRepository repository;
+	private ProdutoRepository produtoRepository;
 
-	public ProdutoVO buscaPorId(Long id) {
-		var entidade = repository.findById(id).orElseThrow(()
+	public Produto buscaPorId(Long id) {
+		return produtoRepository.findById(id).orElseThrow(()
 				-> new NegocioException("Id do produto não encontrado!"));
-		return DozerConverter.parseObject(entidade, ProdutoVO.class);
 	}
 
-	public Page<ProdutoVO> buscaTodos(Pageable pageable) {
-		var page = repository.findAll(pageable);
-		return page.map(this::convertToProdutoVo);
+	public Page<Produto> buscaTodos(Pageable pageable) {
+		Page<Produto> page = produtoRepository.findAll(pageable);
+		return page;
 	}
 	
-	public Page<ProdutoVO> buscaPorNome(Pageable pageable, String nome) {
-		var page = repository.findProdutoByNome(nome, pageable);
-		return page.map(this::convertToProdutoVo);
+	public Page<Produto> buscaPorNome(Pageable pageable, String nome) {
+		Page<Produto> page= produtoRepository.findProdutoByNome(nome, pageable);
+		return page;
+	}
+	
+
+
+	public Produto salvar(Produto produto) {
+		return produtoRepository.save(produto);
 	}
 
-	public ProdutoVO salvar(ProdutoVO produto) {
-		var entidade = DozerConverter.parseObject(produto, Produto.class);
-		var produtoVo = DozerConverter.parseObject(repository.save(entidade), ProdutoVO.class);
-		return produtoVo;
-	}
-
-	public ProdutoVO atualizar(ProdutoVO produto, Long id) {
-		var entidade =  repository.findById(id).orElseThrow(()
+	public Produto atualizar(Produto produto, Long id) {
+		Produto produtos =  produtoRepository.findById(id).orElseThrow(()
 				-> new NegocioException("Id do produto não encontrado!"));
-		entidade.setNome(produto.getNome());
-		entidade.setPreco(produto.getPreco());
-		var produtoVo = DozerConverter.parseObject(repository.save(entidade), ProdutoVO.class);
-			return produtoVo;
-
+		produtos.setNome(produto.getNome());
+		produtos.setPreco(produto.getPreco());
+		return produtoRepository.save(produtos);
 	}
 
 	public void deletar(Long id) {
-		var entidade =  repository.findById(id).orElseThrow(()
+		Produto produto =  produtoRepository.findById(id).orElseThrow(()
 				-> new NegocioException("Id do produto não encontrado!"));
-		repository.delete(entidade);
+		produtoRepository.delete(produto);
 	}
 	
-	
-	private ProdutoVO convertToProdutoVo(Produto entidade) {
-		return DozerConverter.parseObject(entidade, ProdutoVO.class);
-	}
-	
+
 }

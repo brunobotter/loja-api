@@ -12,6 +12,7 @@ public class LojaApiApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(LojaApiApplication.class, args);
+	
 	}
 
 }

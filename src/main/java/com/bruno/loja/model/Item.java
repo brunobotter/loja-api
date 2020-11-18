@@ -3,14 +3,16 @@ package com.bruno.loja.model;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
-import com.bruno.loja.vo.ItemVO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -22,13 +24,16 @@ public class Item implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotNull
-	@ManyToOne
+	
+	
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "idProduto")
 	private Produto produto;
 
-	// @NotNull
+	
 	@JsonIgnore
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "idVenda")
 	private Venda venda;
 
 	@NotNull
@@ -41,17 +46,22 @@ public class Item implements Serializable {
 
 	}
 
-	public Item(ItemVO itemVO) {
-		this.id = itemVO.getKey();
-		this.quantidade = itemVO.getQuantidade();
-		this.valor = itemVO.getValor();
-		// if(itemVO.getVenda() != null) {
-		// this.venda = new Venda(itemVO.getVenda());
-		// }
-		// if (itemVO.getProduto() != null) {
-		// this.produto = new Produto(itemVO.getProduto());
-		// }
+	
+
+	
+	
+	public Item(Long id, Produto produto, Venda venda, @NotNull BigDecimal valor, @NotNull int quantidade) {
+		super();
+		this.id = id;
+		this.produto = produto;
+		this.venda = venda;
+		this.valor = valor;
+		this.quantidade = quantidade;
 	}
+
+
+
+
 
 	public Long getId() {
 		return id;

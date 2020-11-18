@@ -1,7 +1,6 @@
 package com.bruno.loja.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -9,71 +8,59 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.bruno.loja.controller.exception.NegocioException;
-import com.bruno.loja.converter.DozerConverter;
 import com.bruno.loja.model.Funcionario;
 import com.bruno.loja.repository.FuncionarioRepository;
-import com.bruno.loja.vo.FuncionarioVO;
 
 @Service
 public class FuncionarioService {
 
 	@Autowired
-	private FuncionarioRepository repository;
+	private FuncionarioRepository funcionarioRepository;
 	
-	public FuncionarioVO buscaPorId(Long id) {
-		var entidade =  repository.findById(id).orElseThrow(()
+	public Funcionario buscaPorId(Long id) {
+		return funcionarioRepository.findById(id).orElseThrow(()
 				-> new NegocioException("Id funcionario não encontrado!"));
-		return DozerConverter.parseObject(entidade, FuncionarioVO.class);
 	}
 	
-	public Page<FuncionarioVO> buscaTodosPaginado(Pageable pageable) {
-		var page = repository.findAll(pageable);
-		return page.map(this::convertToProdutoVo);
+	public Page<Funcionario> buscaTodosPaginado(Pageable pageable) {
+		Page<Funcionario> page = funcionarioRepository.findAll(pageable);
+		return page;
 	}
 	
-	public List<FuncionarioVO> buscaTodos() {
-		List<Funcionario> listaFuncionario = repository.findAll();
-		List<FuncionarioVO> listaFuncionarioVO = listaFuncionario.stream().map(c -> new FuncionarioVO(c))
-				.collect(Collectors.toList());
-		return listaFuncionarioVO;
+	public List<Funcionario> buscaTodos() {
+		return funcionarioRepository.findAll();
 	}
 	
-	public Page<FuncionarioVO> buscaPorNome(Pageable pageable, String nome) {
-		var page = repository.findFuncionarioByNome(nome, pageable);
-		return page.map(this::convertToProdutoVo);
+	public Page<Funcionario> buscaPorNome(Pageable pageable, String nome) {
+		Page<Funcionario> page = funcionarioRepository.findFuncionarioByNome(nome, pageable);
+		return page;
 	}
 	
-	public FuncionarioVO salva(FuncionarioVO func) {
-		var entidade = DozerConverter.parseObject(func, Funcionario.class);
-		var funcionarioVO = DozerConverter.parseObject(repository.save(entidade), FuncionarioVO.class);
-		return funcionarioVO;
+	public Funcionario salva(Funcionario func) {
+		return funcionarioRepository.save(func);
 	}
 	
 	public void deletaPorId(Long id) {
-		var entidade = repository.findById(id).orElseThrow(()->
+		Funcionario funcionario = funcionarioRepository.findById(id).orElseThrow(()->
 		new NegocioException("Id Funcionario não encontrado!"));
-		repository.delete(entidade);
+		funcionarioRepository.delete(funcionario);
 	}
 	
-	public FuncionarioVO atualiza(FuncionarioVO func, Long id) {
-		var entidade = repository.findById(id).orElseThrow(()
+	public Funcionario atualiza(Funcionario func, Long id) {
+		Funcionario funcionario = funcionarioRepository.findById(id).orElseThrow(()
 				-> new NegocioException("Id cliente não encontrado!"));;
-			entidade.setNome(func.getNome());
-			entidade.setCep(func.getCep());
-			entidade.setCidade(func.getCidade());
-			entidade.setComplemento(func.getComplemento());
-			entidade.setCpf(func.getCpf());
-			entidade.setEmail(func.getEmail());
-			entidade.setEstado(func.getEstado());
-			entidade.setLogradouro(func.getLogradouro());
-			entidade.setNumero(func.getNumero());
-			entidade.setTelefone(func.getTelefone());
-			var funcionarioVO = DozerConverter.parseObject(repository.save(entidade), FuncionarioVO.class);
-			return funcionarioVO;
-	
+				funcionario.setNome(func.getNome());
+				funcionario.setCep(func.getCep());
+				funcionario.setCidade(func.getCidade());
+				funcionario.setComplemento(func.getComplemento());
+				funcionario.setCpf(func.getCpf());
+				funcionario.setEmail(func.getEmail());
+				funcionario.setEstado(func.getEstado());
+				funcionario.setLogradouro(func.getLogradouro());
+				funcionario.setNumero(func.getNumero());
+				funcionario.setTelefone(func.getTelefone());
+				return funcionarioRepository.save(funcionario);
 	}
 	
-	private FuncionarioVO convertToProdutoVo(Funcionario entidade) {
-		return DozerConverter.parseObject(entidade, FuncionarioVO.class);
-	}
+
 }

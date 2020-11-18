@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
-import com.bruno.loja.vo.FuncionarioVO;
+import org.hibernate.validator.constraints.br.CPF;
 
 
 @Entity
@@ -17,25 +17,22 @@ public class Funcionario extends Pessoa {
 	private Long id;
 
 	@NotNull
+	@CPF
 	private String cpf;
 	
 	public Funcionario() {
 		
 	}
 	
-	public Funcionario(FuncionarioVO funcionarioVO) {
-		this.id = funcionarioVO.getKey();
-		this.cpf = funcionarioVO.getCpf();
-		this.cep = funcionarioVO.getCep();
-		this.cidade = funcionarioVO.getCidade();
-		this.complemento = funcionarioVO.getComplemento();
-		this.email = funcionarioVO.getEmail();
-		this.estado = funcionarioVO.getEstado();
-		this.logradouro = funcionarioVO.getLogradouro();
-		this.nome = funcionarioVO.getNome();
-		this.numero = funcionarioVO.getNumero();
-		this.telefone = funcionarioVO.getTelefone();
+	
+
+	public Funcionario(Long id, @NotNull @CPF String cpf) {
+		super();
+		this.id = id;
+		this.cpf = cpf;
 	}
+
+
 
 	public Long getId() {
 		return id;

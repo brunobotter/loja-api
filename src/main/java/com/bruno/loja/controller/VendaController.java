@@ -1,8 +1,5 @@
 package com.bruno.loja.controller;
 
-import static org.springframework.hateoas.server.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.ControllerLinkBuilder.methodOn;
-
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -33,8 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bruno.loja.model.Item;
 import com.bruno.loja.model.Venda;
 import com.bruno.loja.service.VendaService;
-import com.bruno.loja.vo.ItemVO;
-import com.bruno.loja.vo.VendaVO;
 
 @RestController
 @RequestMapping("api/venda")
@@ -45,21 +40,17 @@ public class VendaController {
 	private VendaService vendaService;
 	
 	@Autowired
-	private PagedResourcesAssembler<VendaVO> assembler;
+	private PagedResourcesAssembler<Venda> assembler;
 	
 	
-	
-	@SuppressWarnings("deprecation")
 	@GetMapping("/{id}")
-	public VendaVO buscaPorId(@PathVariable Long id) {
-		VendaVO venda =  vendaService.buscaPorId(id);
-		venda.add(linkTo(methodOn(VendaController.class).buscaPorId(id)).withSelfRel());
-		return venda;
+	public ResponseEntity<Venda> buscaPorId(@PathVariable Long id) {
+		Venda venda =  vendaService.buscaPorId(id);
+		return ResponseEntity.ok(venda);
 	}
 	
 
 	
-	@SuppressWarnings("deprecation")
 	@GetMapping
 	public ResponseEntity<?> buscarTodos(
 			@RequestParam(value = "page", defaultValue = "0") int page,
@@ -69,42 +60,54 @@ public class VendaController {
 
 		Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "id"));
 
-		Page<VendaVO> vendaVo = vendaService.buscaTodosPaginado(pageable);
-		vendaVo.stream()
-				.forEach(p -> p.add(linkTo(methodOn(VendaController.class)
-						.buscaPorId(p.getKey())).withSelfRel()));
+		Page<Venda> venda = vendaService.buscaTodosPaginado(pageable);
+		
 
-		PagedModel<?> resources = assembler.toModel(vendaVo);
+		PagedModel<?> resources = assembler.toModel(venda);
+
+		return new ResponseEntity<>(resources, HttpStatus.OK);
+	}
+	
+	@GetMapping("/busca_por_nome/")
+	public ResponseEntity<?> buscaTodosPorNomeCliente(
+			@RequestParam(value = "nome", defaultValue = "") String nome,
+			@RequestParam(value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "limite", defaultValue = "20") int limit,
+			@RequestParam(value = "direction", defaultValue = "asc") String direction) {
+		var sortDirection = "desc".equalsIgnoreCase(direction) ? Direction.DESC : Direction.ASC;
+
+		Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "id"));
+
+		Page<Venda> venda = vendaService.buscaPorNomeCliente(pageable, nome);
+		
+
+		PagedModel<?> resources = assembler.toModel(venda);
 
 		return new ResponseEntity<>(resources, HttpStatus.OK);
 	}
 
 	@GetMapping("/calcula/{idVenda}")
-	public VendaVO calculaVendas(@PathVariable Long idVenda) {
-		return vendaService.calcularVenda(idVenda);
+	public ResponseEntity<Venda> calculaVendas(@PathVariable Long idVenda) {
+		Venda venda = vendaService.calcularVenda(idVenda);
+		return ResponseEntity.ok(venda);
 	}
 	
-	@SuppressWarnings("deprecation")
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public VendaVO adicionar(@Valid @RequestBody Venda venda) {
-		VendaVO vendaVo =  vendaService.adicionar(venda); 
-		vendaVo.add(linkTo(methodOn(VendaController.class).buscaPorId(venda.getId())).withSelfRel());
-		return vendaVo;
+	public Venda adicionar(@Valid @RequestBody Venda venda) {
+		return vendaService.adicionar(venda); 
 	}
 	
 	@DeleteMapping("/{id}")
-	public ResponseEntity<VendaVO> deletar(@PathVariable Long id) {
+	public ResponseEntity<Venda> deletar(@PathVariable Long id) {
 		 vendaService.deletar(id);
 		 return ResponseEntity.noContent().build();
 	}
 	
-	@SuppressWarnings("deprecation")
 	@PutMapping("/{id}")
-	public VendaVO atualizar(@Valid @PathVariable Long id, @RequestBody Venda venda){
-		VendaVO vendaVo =  vendaService.atualizar(venda, id); 
-		vendaVo.add(linkTo(methodOn(VendaController.class).buscaPorId(venda.getId())).withSelfRel());
-		return vendaVo;
+	public ResponseEntity<Venda> atualizar(@Valid @PathVariable Long id, @RequestBody Venda venda){
+		Venda vendas =  vendaService.atualizar(venda, id); 
+		return ResponseEntity.ok(vendas);
 	}
 	
 	@PutMapping("/{idVenda}/{desconto}/finalizada")
@@ -114,23 +117,23 @@ public class VendaController {
 	
 	/*Item*/
 	
-	@SuppressWarnings("deprecation")
 	@PutMapping("/adicionar/{idVenda}/{idProd}")
-	public ItemVO adicionarItem(@Valid @PathVariable Long idVenda, @PathVariable Long idProd,
+	public ResponseEntity<Item> adicionarItem(@Valid @PathVariable Long idVenda, @PathVariable Long idProd,
 			@RequestBody Item item) {
-		ItemVO novoItem = vendaService.adicionarItem(idVenda, idProd, item.getQuantidade());
-		novoItem.add(linkTo(methodOn(VendaController.class).buscaPorId(item.getId())).withSelfRel());
-		return novoItem;
+		Item novoItem = vendaService.adicionarItem(idVenda, idProd, item.getQuantidade());
+		return ResponseEntity.ok(novoItem);
 	}
 	
 	@GetMapping("/item/{idVenda}")
-	public List<ItemVO> listaItensPorVenda(@PathVariable Long idVenda){
-		return vendaService.listaPorVenda(idVenda);	
+	public ResponseEntity<List<Item>> listaItensPorVenda(@PathVariable Long idVenda){
+		List<Item> item = vendaService.listaPorVenda(idVenda);
+		return ResponseEntity.ok(item);
 	}
 	
 	@GetMapping("/item/busca/{idItem}")
-	public ItemVO buscaItemPorId(@PathVariable Long idItem) {
-		return vendaService.buscaItemPorId(idItem);
+	public ResponseEntity<Item> buscaItemPorId(@PathVariable Long idItem) {
+		Item item = vendaService.buscaItemPorId(idItem);
+		return ResponseEntity.ok(item);
 	}
 
 	

@@ -1,8 +1,5 @@
 package com.bruno.loja.controller;
 
-import static org.springframework.hateoas.server.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.ControllerLinkBuilder.methodOn;
-
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bruno.loja.model.OS;
 import com.bruno.loja.service.OsService;
-import com.bruno.loja.vo.OsVO;
 
 @RestController
 @RequestMapping("api/os")
@@ -40,18 +36,15 @@ public class OsController {
 	private OsService osService;
 	
 	@Autowired
-	private PagedResourcesAssembler<OsVO> assembler;
+	private PagedResourcesAssembler<OS> assembler;
 	
 	
-	@SuppressWarnings("deprecation")
 	@GetMapping("/{id}")
-	public OsVO buscaPorId(@PathVariable Long id) {
-		OsVO os =  osService.buscarPorId(id);
-		os.add(linkTo(methodOn(OsController.class).buscaPorId(id)).withSelfRel());
-		return os;
+	public ResponseEntity<OS> buscaPorId(@PathVariable Long id) {
+		OS os =  osService.buscarPorId(id);
+		return ResponseEntity.ok(os);
 	}
 	
-	@SuppressWarnings("deprecation")
 	@GetMapping
 	public ResponseEntity<?> buscaTodos(
 			@RequestParam(value = "page", defaultValue = "0") int page,
@@ -61,19 +54,17 @@ public class OsController {
 
 		Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "id"));
 
-		Page<OsVO> osVo = osService.buscaTodosPaginado(pageable);
-		osVo.stream()
-				.forEach(p -> p.add(linkTo(methodOn(OsController.class)
-						.buscaPorId(p.getKey())).withSelfRel()));
+		Page<OS> os = osService.buscaTodosPaginado(pageable);
+		
 
-		PagedModel<?> resources = assembler.toModel(osVo);
+		PagedModel<?> resources = assembler.toModel(os);
 
 		return new ResponseEntity<>(resources, HttpStatus.OK);
 	}
 	
-	@SuppressWarnings("deprecation")
-	@GetMapping("busca_por_nome/{nome}")
-	public ResponseEntity<?> buscaTodosPorNomeCliente(@PathVariable("nome") String nome,
+	@GetMapping("busca_por_nome/")
+	public ResponseEntity<?> buscaTodosPorNomeCliente(
+			@RequestParam(value = "nome", defaultValue = "") String nome,
 			@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "limite", defaultValue = "20") int limit,
 			@RequestParam(value = "direction", defaultValue = "asc") String direction) {
@@ -81,38 +72,30 @@ public class OsController {
 
 		Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "id"));
 
-		Page<OsVO> osVo = osService.buscaPorNomeCliente(pageable, nome);
-		osVo.stream()
-				.forEach(p -> p.add(linkTo(methodOn(OsController.class)
-						.buscaPorId(p.getKey())).withSelfRel()));
-
-		PagedModel<?> resources = assembler.toModel(osVo);
+		Page<OS> os = osService.buscaPorNomeCliente(pageable, nome);
+		
+		PagedModel<?> resources = assembler.toModel(os);
 
 		return new ResponseEntity<>(resources, HttpStatus.OK);
 	}
 	
 	@DeleteMapping("/{id}")
-	public ResponseEntity<OsVO> deletar(@PathVariable Long id){
+	public ResponseEntity<OS> deletar(@PathVariable Long id){
 		osService.deletar(id);
 		return ResponseEntity.noContent().build();
 	}
 	
-	@SuppressWarnings("deprecation")
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public OsVO adicionar(@Valid @RequestBody OS os) {
-		OsVO osVO =  osService.salvar(os);
-		osVO.add(linkTo(methodOn(OsController.class).buscaPorId(os.getId())).withSelfRel());
-		return osVO;
+	public ResponseEntity<OS> adicionar(@Valid @RequestBody OS os) {
+		OS ordem =  osService.salvar(os);
+		return ResponseEntity.ok(ordem);
 	}
 	
-	@SuppressWarnings("deprecation")
-	@PutMapping()
-	@ResponseStatus(HttpStatus.OK)
-	public OsVO atualizar(@Valid @RequestBody OS os){
-		OsVO osVO =  osService.atualizar(os);
-		osVO.add(linkTo(methodOn(OsController.class).buscaPorId(os.getId())).withSelfRel());
-		return osVO;
+	@PutMapping("/{id}")
+	public ResponseEntity<OS> atualizar(@PathVariable Long id, @Valid @RequestBody OS os){
+		OS ordem =  osService.atualizar(os, id);
+		return ResponseEntity.ok(ordem);
 	}
 	
 	@PutMapping("/{osId}/finalizada")
@@ -120,4 +103,6 @@ public class OsController {
 	public void finalizarOs(@PathVariable Long osId) {
 		osService.finalizarOs(osId);
 	}
+	
+
 }

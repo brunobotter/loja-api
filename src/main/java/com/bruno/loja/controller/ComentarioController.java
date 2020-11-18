@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bruno.loja.model.Descricao;
 import com.bruno.loja.service.OsService;
-import com.bruno.loja.vo.DescricaoVO;
 
 @RestController
 @RequestMapping("api/comentario")
@@ -28,25 +28,25 @@ public class ComentarioController {
 	@Autowired
 	private OsService osService;
 	
-	@PutMapping("os/{osId}")
+	@PutMapping("/os/{osId}")
 	@ResponseStatus(HttpStatus.OK)
-	public DescricaoVO adicionar(@Valid @PathVariable Long osId, @RequestBody DescricaoVO desc ) {
-		DescricaoVO descricao = osService.adicionarComentario(desc, osId);
+	public Descricao adicionar(@Valid @PathVariable Long osId, @RequestBody Descricao desc ) {
+		Descricao descricao = osService.adicionarComentario(desc, osId);
 		return descricao;
 	}
 	
 	@GetMapping
-	public List<DescricaoVO> buscaComentarios(){
+	public List<Descricao> buscaComentarios(){
 		return osService.buscaComentarios();
 	}
 	
 	@GetMapping("os/{idOs}")
-	public List<DescricaoVO> buscaPorIdOs(@PathVariable Long idOs){
+	public List<Descricao> buscaPorIdOs(@PathVariable Long idOs){
 		return osService.buscaComentariosPorOs(idOs);
 	}
 	
 	@DeleteMapping("os/comentario/{idComentario}")
-	public ResponseEntity<DescricaoVO> deletar(@PathVariable Long idComentario){
+	public ResponseEntity<Descricao> deletar(@PathVariable Long idComentario){
 		osService.deletarComentario(idComentario);
 		return ResponseEntity.noContent().build();
 	}

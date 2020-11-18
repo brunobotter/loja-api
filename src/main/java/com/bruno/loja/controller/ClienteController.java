@@ -1,8 +1,5 @@
 package com.bruno.loja.controller;
 
-import static org.springframework.hateoas.server.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.ControllerLinkBuilder.methodOn;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -34,8 +31,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bruno.loja.model.Cliente;
 import com.bruno.loja.service.ClienteService;
-import com.bruno.loja.vo.ClienteVO;
 
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -50,22 +47,20 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 public class ClienteController {
 
 	@Autowired
-	private ClienteService service;
+	private ClienteService clienteService;
 
 	@Autowired
-	private PagedResourcesAssembler<ClienteVO> assembler;
+	private PagedResourcesAssembler<Cliente> assembler;
 	
-	@SuppressWarnings("deprecation")
 	@GetMapping("{id}")
-	public ClienteVO buscaPorId(@PathVariable Long id) {
-		ClienteVO cliente = service.buscaPorId(id);
-		cliente.add(linkTo(methodOn(ProdutoController.class).buscaPorId(id)).withSelfRel());
-		return cliente;
+	public ResponseEntity<Cliente> buscaPorId(@PathVariable Long id) {
+		Cliente cliente = clienteService.buscaPorId(id);
+		return ResponseEntity.ok(cliente);
 	}
 
-	@SuppressWarnings("deprecation")
-	@GetMapping("busca_por_nome/{nome}")
-	public ResponseEntity<?> buscaPorNome(@PathVariable("nome") String nome,
+	@GetMapping("/busca_por_nome/")
+	public ResponseEntity<?> buscaPorNome(
+			@RequestParam(value = "nome",defaultValue = "") String nome,
 			@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "limite", defaultValue = "2") int limite,
 			@RequestParam(value = "order", defaultValue = "asc") String direction) {
@@ -73,17 +68,14 @@ public class ClienteController {
 
 		Pageable pageable = PageRequest.of(page, limite, Sort.by(sortDirection, "nome"));
 
-		Page<ClienteVO> clienteVO = service.buscaPorNome(pageable, nome);
-		clienteVO.stream()
-				.forEach(p -> p.add(linkTo(methodOn(ClienteController.class)
-						.buscaPorId(p.getKey())).withSelfRel()));
+		Page<Cliente> cliente = clienteService.buscaPorNome(pageable, nome);
+		
 
-		PagedModel<?> resources = assembler.toModel(clienteVO);
+		PagedModel<?> resources = assembler.toModel(cliente);
 
 		return new ResponseEntity<>(resources, HttpStatus.OK);
 	}
 
-	@SuppressWarnings("deprecation")
 	@GetMapping
 	public ResponseEntity<?> buscaTodos(
 			@RequestParam(value = "page", defaultValue = "0") int page,
@@ -93,12 +85,10 @@ public class ClienteController {
 
 		Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "nome"));
 
-		Page<ClienteVO> clienteVO = service.buscaTodosPaginado(pageable);
-		clienteVO.stream()
-				.forEach(p -> p.add(linkTo(methodOn(ClienteController.class)
-						.buscaPorId(p.getKey())).withSelfRel()));
+		Page<Cliente> cliente = clienteService.buscaTodosPaginado(pageable);
+		
 
-		PagedModel<?> resources = assembler.toModel(clienteVO);
+		PagedModel<?> resources = assembler.toModel(cliente);
 		return new ResponseEntity<>(resources, HttpStatus.OK);
 	}
 
@@ -106,7 +96,7 @@ public class ClienteController {
 	@GetMapping("gerarpdf")
 	public void generatePDF(HttpServletResponse response) throws Exception {
 
-		List<ClienteVO> clientes = service.buscaTodos();
+		List<Cliente> clientes = clienteService.buscaTodos();
 		String path = "C:\\Users\\servidor\\Desktop\\Nova pasta";
 		response.setContentType("text/html");
 		JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(clientes);
@@ -124,27 +114,23 @@ public class ClienteController {
 		JasperExportManager.exportReportToPdfFile(jasperPrint, path + "\\cliente.pdf");
 	}
 
-	@SuppressWarnings("deprecation")
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public ClienteVO salvar(@Valid @RequestBody ClienteVO cli) {
-		ClienteVO clienteVO = service.salvar(cli);
-		clienteVO.add(linkTo(methodOn(ClienteController.class).buscaPorId(cli.getKey())).withSelfRel());
-		return clienteVO;
+	public ResponseEntity<Cliente> salvar(@Valid @RequestBody Cliente cli) {
+		Cliente cliente = clienteService.salvar(cli);
+		return ResponseEntity.ok(cliente);
 	}
 
-	@SuppressWarnings("deprecation")
 	@PutMapping("{id}")
 	@ResponseStatus(HttpStatus.OK)
-	public ClienteVO atualizar(@Valid @PathVariable Long id, @RequestBody ClienteVO cli) {
-		ClienteVO clienteVo = service.atualiza(cli, id);
-		clienteVo.add(linkTo(methodOn(ClienteController.class).buscaPorId(id)).withSelfRel());
-		return clienteVo;
+	public ResponseEntity<Cliente> atualizar(@Valid @PathVariable Long id, @RequestBody Cliente cli) {
+		Cliente cliente = clienteService.atualiza(cli, id);
+		return ResponseEntity.ok(cliente);
 	}
 
 	@DeleteMapping("{id}")
-	public ResponseEntity<ClienteVO> deletar(@PathVariable Long id) {
-		service.deletar(id);
+	public ResponseEntity<Cliente> deletar(@PathVariable Long id) {
+		clienteService.deletar(id);
 		return ResponseEntity.noContent().build();
 	}
 	
